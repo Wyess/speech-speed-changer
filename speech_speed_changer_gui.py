@@ -7,38 +7,38 @@ import subprocess
 import wx
 
 class AudioItem:
-    def __init__(self, in_file='', speed_list=None, out_directory='', outFormat=None):
-        self.input = in_file 
+    def __init__(self, in_file='', speed_list=None, out_dir='', out_format=None):
+        self.in_file = in_file
         self.speed_list = speed_list if speed_list else []
-        self.out_directory = out_directory
-        self.output = []
-        self.outFormat = outFormat
+        self.out_dir = out_dir
+        self.out_files = []
+        self.out_format = out_format
 
         head, tail = os.path.split(in_file)
         base, _ = os.path.splitext(tail)
-        ext = self.outFormat['ext']
+        ext = self.out_format['ext']
 
-        self.output = [os.path.join(self.out_directory, f"{base}_x{speed}{ext}") for speed in speed_list]
+        self.out_files = [os.path.join(self.out_dir, f"{base}_x{speed}{ext}") for speed in speed_list]
         self.out_files = [f"{base}_x{speed}{ext}" for speed in speed_list]
         self.commands = []
-        for out in self.output:
+        for out in self.out_files:
             self.commands.append([])
-            self.commands[-1].append(self.outFormat['cmd'].split(' ')[0])
+            self.commands[-1].append(self.out_format['cmd'].split(' ')[0])
             self.commands[-1].insert(1, '-i')
-            self.commands[-1].insert(2, self.input)
-            self.commands[-1].extend(self.outFormat['cmd'].split(' ')[1:])
+            self.commands[-1].insert(2, self.in_file)
+            self.commands[-1].extend(self.out_format['cmd'].split(' ')[1:])
             self.commands[-1].append(out)
 
     def __str__(self):
-        s = self.input
+        s = self.in_file
         s += "\n"
-        s += self.out_directory
+        s += self.out_dir
         s += "\n"
         s += ",".join([str(i) for i in self.speed_list])
         s += "\n"
-        s += "\n".join(self.output)
+        s += "\n".join(self.out_files)
         s += "\n"
-        s += str(self.outFormat)
+        s += str(self.out_format)
         s += "\n"
         s += str(self.commands)
         return s
@@ -169,7 +169,7 @@ class SpeechSpeedChangerGui(wx.Frame):
                 break
 
     def Speedup(self, event, audio_item):
-        in_file = audio_item.input
+        in_file = audio_item.in_file
 
         if in_file.endswith('.wav'):
             shutil.copy(in_file, 'tmp.wav')
@@ -206,17 +206,17 @@ class SpeechSpeedChangerGui(wx.Frame):
         if not self.in_list:
             return
 
-        outFormat = self.outFormatComboBox.GetClientData(self.outFormatComboBox.GetSelection())
+        out_format = self.outFormatComboBox.GetClientData(self.outFormatComboBox.GetSelection())
         speed_list = self.presetComboBox.GetClientData(self.presetComboBox.GetSelection())['speed']
 
         head = self.outDirPicker.GetPath()
         if not head or not os.path.exists(head):
             head = os.path.abspath(os.path.expanduser('~'))
-            self.outDir = head
+            self.out_dir= head
             self.outDirPicker.SetPath(head)
-        self.outDir = head
+        self.out_dir= head
 
-        self.audio_items = [AudioItem(item, speed_list, self.outDir, outFormat) for item in self.in_list]
+        self.audio_items = [AudioItem(item, speed_list, self.outDir, out_format) for item in self.in_list]
 
             
         self.text.Clear()
@@ -257,9 +257,9 @@ class SpeechSpeedChangerGui(wx.Frame):
 
         self.processed_files = {} 
         for i, audio_item in enumerate(self.audio_items):
-            if audio_item.input not in self.processed_files:
+            if audio_item.in_file not in self.processed_files:
                 self.Speedup(None, audio_item)
-                self.processed_files[audio_item.input] = True
+                self.processed_files[audio_item.in_file] = True
             self.progressGauge.SetValue(i)
 
             if self.state == State.INTERRUPTED:
@@ -269,13 +269,13 @@ class SpeechSpeedChangerGui(wx.Frame):
                 self.startButton.SetLabel("Start")
                 return
 
-        outFormat = self.outFormatComboBox.GetClientData(self.outFormatComboBox.GetSelection())
-        ext = outFormat['ext']
+        out_format = self.outFormatComboBox.GetClientData(self.outFormatComboBox.GetSelection())
+        ext = out_format['ext']
 
         if self.mergeCheck.IsChecked():
             with open('./merge.txt', 'w') as f:
                 for audio_item in self.audio_items:
-                    for out_file in audio_item.output:
+                    for out_file in audio_item.out_files:
                         f.write(f"file '{out_file}'\n")
             
             merged_name = "_".join([str(speed) for speed in self.audio_items[0].speed_list]) + ext
@@ -288,7 +288,7 @@ class SpeechSpeedChangerGui(wx.Frame):
             os.remove('./merge.txt')
 
             for audio_item in self.audio_items:
-                for out_file in audio_item.output:
+                for out_file in audio_item.out_files:
                     try:
                         os.remove(out_file)
                     except:
