@@ -227,7 +227,6 @@ class SpeechSpeedChangerGui(wx.Frame):
 
         self.audio_items = [AudioItem(item, speed_list, self.out_dir, out_format) for item in self.in_list]
 
-
         self.text.Clear()
         for out_files in [audio_item.out_files for audio_item in self.audio_items]:
             self.text.write(''.join([f"{os.path.split(out_file)[1]}\n" for out_file in out_files]))
