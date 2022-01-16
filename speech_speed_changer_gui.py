@@ -114,6 +114,7 @@ class SpeechSpeedChangerGui(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.Convert, self.startButton)
         self.Bind(wx.EVT_COMBOBOX, self.GenerateParams, self.presetComboBox)
         self.Bind(wx.EVT_COMBOBOX, self.GenerateParams, self.outFormatComboBox)
+        self.Bind(wx.EVT_DIRPICKER_CHANGED, self.GenerateParams, self.outDirPicker)
 
         panel.SetSizer(layout)
 
