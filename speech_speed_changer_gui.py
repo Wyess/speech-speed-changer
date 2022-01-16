@@ -68,18 +68,18 @@ class SpeechSpeedChangerGui(wx.Frame):
 
     def InitUi(self):
         panel = wx.Panel(self, wx.ID_ANY, style=wx.RAISED_BORDER)
+
         self.inputTextCtrl = wx.TextCtrl(panel, wx.ID_ANY, size=(-1, 100), style=wx.TE_MULTILINE)
-        self.mergeCheck = wx.CheckBox(panel, wx.ID_ANY, label="Merge")
-
+        self.text = wx.TextCtrl(panel, wx.ID_ANY, style=wx.TE_MULTILINE, size=(-1, 100))
         self.outDirPicker = wx.DirPickerCtrl(panel, size=(400, -1))
-
         self.outFormatComboBox = wx.ComboBox(panel, wx.ID_ANY, style=wx.CB_READONLY)
 
         self.progressGauge = wx.Gauge(panel, wx.ID_ANY, style=wx.GA_HORIZONTAL|wx.GA_PROGRESS)
 
         self.presetComboBox = wx.ComboBox(panel, wx.ID_ANY, style=wx.CB_READONLY)
-        self.text = wx.TextCtrl(panel, wx.ID_ANY, style=wx.TE_MULTILINE, size=(-1, 100))
+        self.mergeCheck = wx.CheckBox(panel, wx.ID_ANY, label="Merge")
         self.startButton = wx.Button(panel, wx.ID_ANY, label="Start")
+        self.progressGauge = wx.Gauge(panel, wx.ID_ANY, style=wx.GA_HORIZONTAL|wx.GA_PROGRESS)
 
         dt = InputFileDropTarget(self.GenerateParams)
         self.inputTextCtrl.SetDropTarget(dt)
@@ -89,32 +89,26 @@ class SpeechSpeedChangerGui(wx.Frame):
 
         self.mergeCheck.SetValue(True)
 
-        layout = wx.BoxSizer(wx.VERTICAL)
-
-        inputTextCtrlLayout = wx.BoxSizer(wx.HORIZONTAL)
         listLayout = wx.StaticBoxSizer(wx.VERTICAL, panel, label="Input files")
-        ioLayout = wx.StaticBoxSizer(wx.HORIZONTAL, panel, label="Output")
         listLayout.Add(self.inputTextCtrl, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=5, proportion=1)
-        ioLayout.Add(self.text, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, proportion=1, border=5)
-        layout.Add(listLayout, flag=wx.EXPAND|wx.ALL, border=5, proportion=1)
-        layout.Add(ioLayout, flag=wx.EXPAND|wx.ALL, proportion=1, border=5)
 
-        controlLayout = wx.BoxSizer(wx.HORIZONTAL)
+        ioLayout = wx.StaticBoxSizer(wx.HORIZONTAL, panel, label="Output")
+        ioLayout.Add(self.text, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, proportion=1, border=5)
 
         outDirLayout = wx.StaticBoxSizer(wx.VERTICAL, panel, 'Output directory')
         outDirLayout.Add(self.outDirPicker)
-        layout.Add(outDirLayout, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=5)
 
         presetLayout = wx.StaticBoxSizer(wx.HORIZONTAL, panel, 'Settings')
         presetLayout.Add(self.outFormatComboBox, flag=wx.EXPAND)
         presetLayout.Add(self.presetComboBox, flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         presetLayout.Add(self.mergeCheck, flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+
+        layout = wx.BoxSizer(wx.VERTICAL)
+        layout.Add(listLayout, flag=wx.EXPAND|wx.ALL, border=5, proportion=1)
+        layout.Add(ioLayout, flag=wx.EXPAND|wx.ALL, proportion=1, border=5)
+        layout.Add(outDirLayout, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=5)
         layout.Add(presetLayout, flag=wx.EXPAND|wx.ALL, border=5)
-
-        checkBoxLayout2 = wx.BoxSizer(wx.HORIZONTAL)
-        layout.Add(checkBoxLayout2, flag=wx.LEFT, border=5)
         layout.Add(self.startButton, flag=wx.EXPAND|wx.ALL, border=10)
-
         layout.Add(self.progressGauge, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, border=15)
 
         self.Bind(wx.EVT_LISTBOX, self.GenerateParams, self.inputTextCtrl)
