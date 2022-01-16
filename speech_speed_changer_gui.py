@@ -19,7 +19,6 @@ class AudioItem:
         ext = self.out_format['ext']
 
         self.out_files = [os.path.join(self.out_dir, f"{base}_x{speed}{ext}") for speed in speed_list]
-        self.out_files = [f"{base}_x{speed}{ext}" for speed in speed_list]
         self.commands = []
         for out in self.out_files:
             self.commands.append([])
