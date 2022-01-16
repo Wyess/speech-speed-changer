@@ -22,10 +22,8 @@ class AudioItem:
         self.commands = []
         for out in self.out_files:
             self.commands.append([])
-            self.commands[-1].append(self.out_format['cmd'].split(' ')[0])
-            self.commands[-1].insert(1, '-i')
-            self.commands[-1].insert(2, self.in_file)
-            self.commands[-1].extend(self.out_format['cmd'].split(' ')[1:])
+            self.commands[-1] = self.out_format['cmd'].split(' ')
+            self.commands[-1][1:1] = ['-i',self.in_file]
             self.commands[-1].append(out)
 
     def __str__(self):
@@ -64,10 +62,10 @@ class SpeechSpeedChangerGui(wx.Frame):
         self.in_list = []
         self.out_dir = ''
         self.audio_items = []
-        self.processed_files = {} 
+        self.processed_files = {}
         self.state = State.IDLE
         self.Show()
-    
+
     def InitUi(self):
         panel = wx.Panel(self, wx.ID_ANY, style=wx.RAISED_BORDER)
         self.inputTextCtrl = wx.TextCtrl(panel, wx.ID_ANY, size=(-1, 100), style=wx.TE_MULTILINE)
@@ -78,7 +76,7 @@ class SpeechSpeedChangerGui(wx.Frame):
         self.outFormatComboBox = wx.ComboBox(panel, wx.ID_ANY, style=wx.CB_READONLY)
 
         self.progressGauge = wx.Gauge(panel, wx.ID_ANY, style=wx.GA_HORIZONTAL|wx.GA_PROGRESS)
-        
+
         self.presetComboBox = wx.ComboBox(panel, wx.ID_ANY, style=wx.CB_READONLY)
         self.text = wx.TextCtrl(panel, wx.ID_ANY, style=wx.TE_MULTILINE, size=(-1, 100))
         self.startButton = wx.Button(panel, wx.ID_ANY, label="Start")
@@ -167,6 +165,15 @@ class SpeechSpeedChangerGui(wx.Frame):
             else:
                 break
 
+    def GetMetaData(self, in_file):
+        args = ['ffmpeg', '-y', '-i', in_file, '-f', 'ffmetadata', 'metadata.txt']
+        self.RunProcess(args)
+
+        metadata = ''
+        with open('metadata.txt', 'r') as f:
+            metadata = f.read()
+        return metadata
+
     def Speedup(self, event, audio_item):
         in_file = audio_item.in_file
 
@@ -176,15 +183,18 @@ class SpeechSpeedChangerGui(wx.Frame):
             args = ['ffmpeg', '-i', in_file, 'tmp.wav', '-y']
             self.RunProcess(args)
 
+        args = ['ffmpeg', '-y', '-i', in_file, '-f', 'ffmetadata', 'metadata.txt']
+        self.RunProcess(args)
+
         for i, speed in enumerate(audio_item.speed_list):
             args = ['./sonic', '-q', '-s', f"{speed:.2f}", 'tmp.wav', 'tmp2.wav']
             self.RunProcess(args)
 
             audio_item.commands[i][2] = 'tmp2.wav'
+            audio_item.commands[i][3:3] = ['-i', 'metadata.txt', '-map_metadata', '1']
             self.RunProcess(audio_item.commands[i])
 
         try:
-            pass
             os.remove('tmp.wav')
             os.remove('tmp2.wav')
         except:
@@ -215,12 +225,12 @@ class SpeechSpeedChangerGui(wx.Frame):
             self.outDirPicker.SetPath(head)
         self.out_dir= head
 
-        self.audio_items = [AudioItem(item, speed_list, self.outDir, out_format) for item in self.in_list]
+        self.audio_items = [AudioItem(item, speed_list, self.out_dir, out_format) for item in self.in_list]
 
-            
+
         self.text.Clear()
         for out_files in [audio_item.out_files for audio_item in self.audio_items]:
-            self.text.write(''.join([f"{out_file}\n" for out_file in out_files]))
+            self.text.write(''.join([f"{os.path.split(out_file)[1]}\n" for out_file in out_files]))
 
     def LockUi(self, lock=True):
         if lock:
@@ -277,12 +287,16 @@ class SpeechSpeedChangerGui(wx.Frame):
                     for out_file in audio_item.out_files:
                         f.write(f"file '{out_file}'\n")
             
+            args = ['ffmpeg', '-y', '-i', self.audio_items[0].in_file, '-f', 'ffmetadata', 'metadata.txt']
+            self.RunProcess(args)
+
             merged_name = "_".join([str(speed) for speed in self.audio_items[0].speed_list]) + ext
-            merged_name = os.path.join(self.outDir, merged_name)
+            merged_name = os.path.join(self.out_dir, merged_name)
             if ext == '.flac':
-                args = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', merged_name]
+                args = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', merged_name]
+                args = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', '-codec', 'copy', merged_name]
             else:
-                args = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-c', 'copy', merged_name]
+                args = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', '-codec', 'copy', merged_name]
             self.RunProcess(args)
             os.remove('./merge.txt')
 
