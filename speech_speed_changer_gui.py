@@ -79,7 +79,6 @@ class SpeechSpeedChangerGui(wx.Frame):
         self.presetComboBox = wx.ComboBox(panel, wx.ID_ANY, style=wx.CB_READONLY)
         self.mergeCheck = wx.CheckBox(panel, wx.ID_ANY, label="Merge")
         self.startButton = wx.Button(panel, wx.ID_ANY, label="Start")
-        self.progressGauge = wx.Gauge(panel, wx.ID_ANY, style=wx.GA_HORIZONTAL|wx.GA_PROGRESS)
 
         dt = InputFileDropTarget(self.GenerateParams)
         self.inputTextCtrl.SetDropTarget(dt)
