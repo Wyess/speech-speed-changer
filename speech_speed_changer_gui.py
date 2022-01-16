@@ -215,7 +215,7 @@ class SpeechSpeedChangerGui(wx.Frame):
             self.outDirPicker.SetPath(head)
         self.out_dir= head
 
-        self.audio_items = [AudioItem(item, speed_list, self.outDir, out_format) for item in self.in_list]
+        self.audio_items = [AudioItem(item, speed_list, self.out_dir, out_format) for item in self.in_list]
 
             
         self.text.Clear()
@@ -278,7 +278,7 @@ class SpeechSpeedChangerGui(wx.Frame):
                         f.write(f"file '{out_file}'\n")
             
             merged_name = "_".join([str(speed) for speed in self.audio_items[0].speed_list]) + ext
-            merged_name = os.path.join(self.outDir, merged_name)
+            merged_name = os.path.join(self.out_dir, merged_name)
             if ext == '.flac':
                 args = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', merged_name]
             else:
