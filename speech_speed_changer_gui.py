@@ -2,6 +2,7 @@
 
 from enum import Enum
 import os
+import sys
 import shutil
 import subprocess
 import wx
@@ -64,7 +65,15 @@ class SpeechSpeedChangerGui(wx.Frame):
         self.audio_items = []
         self.processed_files = {}
         self.state = State.IDLE
+        self.SetApplicationPath()
         self.Show()
+
+    def SetApplicationPath(self):
+        if getattr(sys, 'frozen', False):
+            self.application_path = sys._MEIPASS
+        else:
+            self.application_path = os.path.dirname(os.path.abspath(__file__))
+        os.chdir(self.application_path)
 
     def InitUi(self):
         panel = wx.Panel(self, wx.ID_ANY, style=wx.RAISED_BORDER)
@@ -78,11 +87,11 @@ class SpeechSpeedChangerGui(wx.Frame):
         self.inputTextCtrl = wx.TextCtrl(panel, wx.ID_ANY, size=(-1, 100), style=wx.TE_MULTILINE)
         self.text = wx.TextCtrl(panel, wx.ID_ANY, style=wx.TE_MULTILINE, size=(-1, 100))
         self.outDirPicker = wx.DirPickerCtrl(panel, size=(400, -1))
-        self.outFormatComboBox = wx.ComboBox(panel, wx.ID_ANY, style=wx.CB_READONLY)
+        self.outFormatComboBox = wx.ComboBox(panel, wx.ID_ANY, style=wx.CB_READONLY, size=(120, -1))
 
         self.progressGauge = wx.Gauge(panel, wx.ID_ANY, style=wx.GA_HORIZONTAL|wx.GA_PROGRESS)
 
-        self.presetComboBox = wx.ComboBox(panel, wx.ID_ANY, style=wx.CB_READONLY)
+        self.presetComboBox = wx.ComboBox(panel, wx.ID_ANY, style=wx.CB_READONLY, size=(110, -1))
         self.mergeCheck = wx.CheckBox(panel, wx.ID_ANY, label="Merge")
         self.startButton = wx.Button(panel, wx.ID_ANY, label="Start")
 
@@ -100,16 +109,16 @@ class SpeechSpeedChangerGui(wx.Frame):
 
         outDirLayout.Add(self.outDirPicker)
 
-        presetLayout.Add(self.outFormatComboBox, flag=wx.EXPAND)
-        presetLayout.Add(self.presetComboBox, flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
-        presetLayout.Add(self.mergeCheck, flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
+        presetLayout.Add(self.outFormatComboBox, flag=wx.EXPAND|wx.RIGHT, border=5)
+        presetLayout.Add(self.presetComboBox, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=5)
+        presetLayout.Add(self.mergeCheck, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=5)
 
         layout.Add(listLayout, flag=wx.EXPAND|wx.ALL, border=5, proportion=1)
         layout.Add(ioLayout, flag=wx.EXPAND|wx.ALL, proportion=1, border=5)
         layout.Add(outDirLayout, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=5)
         layout.Add(presetLayout, flag=wx.EXPAND|wx.ALL, border=5)
-        layout.Add(self.startButton, flag=wx.EXPAND|wx.ALL, border=10)
-        layout.Add(self.progressGauge, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, border=15)
+        layout.Add(self.startButton, flag=wx.EXPAND|wx.ALL, border=5)
+        layout.Add(self.progressGauge, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, border=10)
 
         self.Bind(wx.EVT_LISTBOX, self.GenerateParams, self.inputTextCtrl)
         self.Bind(wx.EVT_BUTTON, self.Convert, self.startButton)
@@ -139,19 +148,24 @@ class SpeechSpeedChangerGui(wx.Frame):
         self.presetComboBox.SetSelection(0)
 
     def LoadOutFormat(self):
-        self.outFormatComboBox.Append('ALAC', {'cmd': 'ffmpeg -y -acodec alac', 'ext': '.m4a'})
-        self.outFormatComboBox.Append('FLAC', {'cmd': 'ffmpeg -y -acodec flac', 'ext': '.flac'})
-        self.outFormatComboBox.Append('AIFF', {'cmd': 'ffmpeg -y -acodec pcm_s16be', 'ext': '.aiff'})
-        self.outFormatComboBox.Append('WAV', {'cmd': 'ffmpeg -y -acodec pcm_s16le', 'ext': '.wav'})
-        self.outFormatComboBox.Append('MP3 (192kbps)', {'cmd': 'ffmpeg -y -acodec libmp3lame -ab 192k', 'ext': '.mp3'})
-        self.outFormatComboBox.Append('MP3 (160kbps)', {'cmd': 'ffmpeg -y -acodec libmp3lame mp3 -ab 160k', 'ext': '.mp3'})
-        self.outFormatComboBox.Append('MP3 (128kbps)', {'cmd': 'ffmpeg -y -acodec libmp3lame mp3 -ab 128k', 'ext': '.mp3'})
-        self.outFormatComboBox.Append('AAC (256kbps)', {'cmd': 'ffmpeg -y -acodec aac -ab 128k -ar 44100', 'ext': '.m4a'})
-        self.outFormatComboBox.Append('AAC (128kbps)', {'cmd': 'ffmpeg -y -acodec aac -ab 256k -ar 44100', 'ext': '.m4a'})
+        self.outFormatComboBox.Append('ALAC', {'cmd': './ffmpeg -y -acodec alac', 'ext': '.m4a'})
+        self.outFormatComboBox.Append('FLAC', {'cmd': './ffmpeg -y -acodec flac', 'ext': '.flac'})
+        self.outFormatComboBox.Append('AIFF', {'cmd': './ffmpeg -y -acodec pcm_s16be', 'ext': '.aiff'})
+        self.outFormatComboBox.Append('WAV', {'cmd': './ffmpeg -y -acodec pcm_s16le', 'ext': '.wav'})
+        self.outFormatComboBox.Append('MP3 (192kbps)', {'cmd': './ffmpeg -y -acodec libmp3lame -ab 192k', 'ext': '.mp3'})
+        self.outFormatComboBox.Append('MP3 (160kbps)', {'cmd': './ffmpeg -y -acodec libmp3lame mp3 -ab 160k', 'ext': '.mp3'})
+        self.outFormatComboBox.Append('MP3 (128kbps)', {'cmd': './ffmpeg -y -acodec libmp3lame mp3 -ab 128k', 'ext': '.mp3'})
+        self.outFormatComboBox.Append('AAC (256kbps)', {'cmd': './ffmpeg -y -acodec aac -ab 128k -ar 44100', 'ext': '.m4a'})
+        self.outFormatComboBox.Append('AAC (128kbps)', {'cmd': './ffmpeg -y -acodec aac -ab 256k -ar 44100', 'ext': '.m4a'})
         self.outFormatComboBox.SetSelection(0)
 
     def RunProcess(self, args):
-        ps = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if os.name == 'nt':
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            ps = subprocess.Popen(args, startupinfo=startupinfo, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
+        else:
+            ps = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
         while True:
             line = ps.stdout.readline().decode()
             if line:
@@ -161,7 +175,7 @@ class SpeechSpeedChangerGui(wx.Frame):
                 break
 
     def GetMetaData(self, in_file):
-        args = ['ffmpeg', '-y', '-i', in_file, '-f', 'ffmetadata', 'metadata.txt']
+        args = ['./ffmpeg', '-y', '-i', in_file, '-f', 'ffmetadata', 'metadata.txt']
         self.RunProcess(args)
 
         metadata = ''
@@ -175,10 +189,10 @@ class SpeechSpeedChangerGui(wx.Frame):
         if in_file.endswith('.wav'):
             shutil.copy(in_file, 'tmp.wav')
         else:
-            args = ['ffmpeg', '-i', in_file, 'tmp.wav', '-y']
+            args = ['./ffmpeg', '-i', in_file, 'tmp.wav', '-y']
             self.RunProcess(args)
 
-        args = ['ffmpeg', '-y', '-i', in_file, '-f', 'ffmetadata', 'metadata.txt']
+        args = ['./ffmpeg', '-y', '-i', in_file, '-f', 'ffmetadata', 'metadata.txt']
         self.RunProcess(args)
 
         for i, speed in enumerate(audio_item.speed_list):
@@ -281,16 +295,16 @@ class SpeechSpeedChangerGui(wx.Frame):
                     for out_file in audio_item.out_files:
                         f.write(f"file '{out_file}'\n")
             
-            args = ['ffmpeg', '-y', '-i', self.audio_items[0].in_file, '-f', 'ffmetadata', 'metadata.txt']
+            args = ['./ffmpeg', '-y', '-i', self.audio_items[0].in_file, '-f', 'ffmetadata', 'metadata.txt']
             self.RunProcess(args)
 
             merged_name = "_".join([str(speed) for speed in self.audio_items[0].speed_list]) + ext
             merged_name = os.path.join(self.out_dir, merged_name)
             if ext == '.flac':
-                args = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', merged_name]
-                args = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', '-codec', 'copy', merged_name]
+                args = ['./ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', merged_name]
+                args = ['./ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', '-codec', 'copy', merged_name]
             else:
-                args = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', '-codec', 'copy', merged_name]
+                args = ['./ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', '-codec', 'copy', merged_name]
             self.RunProcess(args)
             os.remove('./merge.txt')
 
