@@ -69,6 +69,12 @@ class SpeechSpeedChangerGui(wx.Frame):
     def InitUi(self):
         panel = wx.Panel(self, wx.ID_ANY, style=wx.RAISED_BORDER)
 
+        layout = wx.BoxSizer(wx.VERTICAL)
+        listLayout = wx.StaticBoxSizer(wx.VERTICAL, panel, label="Input files")
+        ioLayout = wx.StaticBoxSizer(wx.HORIZONTAL, panel, label="Output")
+        outDirLayout = wx.StaticBoxSizer(wx.VERTICAL, panel, 'Output directory')
+        presetLayout = wx.StaticBoxSizer(wx.HORIZONTAL, panel, 'Settings')
+
         self.inputTextCtrl = wx.TextCtrl(panel, wx.ID_ANY, size=(-1, 100), style=wx.TE_MULTILINE)
         self.text = wx.TextCtrl(panel, wx.ID_ANY, style=wx.TE_MULTILINE, size=(-1, 100))
         self.outDirPicker = wx.DirPickerCtrl(panel, size=(400, -1))
@@ -88,21 +94,16 @@ class SpeechSpeedChangerGui(wx.Frame):
 
         self.mergeCheck.SetValue(True)
 
-        listLayout = wx.StaticBoxSizer(wx.VERTICAL, panel, label="Input files")
         listLayout.Add(self.inputTextCtrl, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=5, proportion=1)
 
-        ioLayout = wx.StaticBoxSizer(wx.HORIZONTAL, panel, label="Output")
         ioLayout.Add(self.text, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, proportion=1, border=5)
 
-        outDirLayout = wx.StaticBoxSizer(wx.VERTICAL, panel, 'Output directory')
         outDirLayout.Add(self.outDirPicker)
 
-        presetLayout = wx.StaticBoxSizer(wx.HORIZONTAL, panel, 'Settings')
         presetLayout.Add(self.outFormatComboBox, flag=wx.EXPAND)
         presetLayout.Add(self.presetComboBox, flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
         presetLayout.Add(self.mergeCheck, flag=wx.EXPAND|wx.LEFT|wx.RIGHT)
 
-        layout = wx.BoxSizer(wx.VERTICAL)
         layout.Add(listLayout, flag=wx.EXPAND|wx.ALL, border=5, proportion=1)
         layout.Add(ioLayout, flag=wx.EXPAND|wx.ALL, proportion=1, border=5)
         layout.Add(outDirLayout, flag=wx.EXPAND|wx.LEFT|wx.RIGHT, border=5)
