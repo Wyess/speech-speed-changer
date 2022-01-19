@@ -15,7 +15,7 @@ class AudioItem:
         self.out_files = []
         self.out_format = out_format
 
-        head, tail = os.path.split(in_file)
+        head, tail = os.path.split(self.in_file)
         base, _ = os.path.splitext(tail)
         ext = self.out_format['ext']
 
@@ -24,7 +24,7 @@ class AudioItem:
         for out in self.out_files:
             self.commands.append([])
             self.commands[-1] = self.out_format['cmd'].split(' ')
-            self.commands[-1][1:1] = ['-i',self.in_file]
+            self.commands[-1][1:1] = ['-i', self.in_file]
             self.commands[-1].append(out)
 
     def __str__(self):
@@ -268,6 +268,8 @@ class SpeechSpeedChangerGui(wx.Frame):
             self.startButton.SetLabel("Stop")
             self.text.Clear()
 
+
+        self.GenerateParams(None)
 
         self.progressGauge.SetRange(len(self.audio_items) - 1)
         self.progressGauge.SetValue(0)
