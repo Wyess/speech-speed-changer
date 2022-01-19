@@ -63,7 +63,6 @@ class SpeechSpeedChangerGui(wx.Frame):
         self.in_list = []
         self.out_dir = ''
         self.audio_items = []
-        self.processed_files = {}
         self.state = State.IDLE
         self.SetApplicationPath()
         self.Show()
@@ -195,7 +194,7 @@ class SpeechSpeedChangerGui(wx.Frame):
         args = ['./ffmpeg', '-y', '-i', in_file, '-f', 'ffmetadata', 'metadata.txt']
         self.RunProcess(args)
 
-        for i, speed in enumerate(audio_item.speed_list):
+        for i, speed in enumerate(set(audio_item.speed_list)):
             args = ['./sonic', '-q', '-s', f"{speed:.2f}", 'tmp.wav', 'tmp2.wav']
             self.RunProcess(args)
 
@@ -274,11 +273,8 @@ class SpeechSpeedChangerGui(wx.Frame):
         self.progressGauge.SetRange(len(self.audio_items) - 1)
         self.progressGauge.SetValue(0)
 
-        self.processed_files = {} 
         for i, audio_item in enumerate(self.audio_items):
-            if audio_item.in_file not in self.processed_files:
-                self.Speedup(None, audio_item)
-                self.processed_files[audio_item.in_file] = True
+            self.Speedup(None, audio_item)
             self.progressGauge.SetValue(i)
 
             if self.state == State.INTERRUPTED:
