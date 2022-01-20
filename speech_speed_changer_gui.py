@@ -300,7 +300,6 @@ class SpeechSpeedChangerGui(wx.Frame):
             merged_name = os.path.join(self.out_dir, merged_name)
             if ext == '.flac':
                 args = ['./ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', merged_name]
-                args = ['./ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', '-codec', 'copy', merged_name]
             else:
                 args = ['./ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', 'merge.txt', '-i', 'metadata.txt', '-map_metadata', '1', '-codec', 'copy', merged_name]
             self.RunProcess(args)
