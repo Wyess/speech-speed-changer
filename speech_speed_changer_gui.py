@@ -270,12 +270,12 @@ class SpeechSpeedChangerGui(wx.Frame):
 
         self.GenerateParams(None)
 
-        self.progressGauge.SetRange(len(self.audio_items) - 1)
+        self.progressGauge.SetRange(len(self.audio_items) + 1)
         self.progressGauge.SetValue(0)
 
         for i, audio_item in enumerate(self.audio_items):
             self.Speedup(None, audio_item)
-            self.progressGauge.SetValue(i)
+            self.progressGauge.SetValue(i + 1)
 
             if self.state == State.INTERRUPTED:
                 self.progressGauge.SetValue(0)
@@ -312,6 +312,8 @@ class SpeechSpeedChangerGui(wx.Frame):
                         os.remove(out_file)
                     except:
                         pass
+
+        self.progressGauge.SetValue(len(self.audio_items) + 1)
 
         self.state = State.IDLE
         self.LockUi(False)
